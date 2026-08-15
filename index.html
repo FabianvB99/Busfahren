@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0E1526">
+<title>Busfahren</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100vh; background: #0E1526; color: #EDEAE0;
+    font-family: 'Avenir Next','Segoe UI',system-ui,sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(20px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  }
+  .eyebrow { font-size: 12px; letter-spacing: .35em; color: #F0A93B; font-weight: 700; text-align: center; }
+  h1 { margin: 4px 0 16px; font-size: 38px; font-weight: 900; letter-spacing: -.02em; text-align: center; }
+
+  .route { display: flex; align-items: center; width: 100%; max-width: 480px; margin-bottom: 20px; }
+  .stopwrap { flex: 1; display: flex; align-items: center; }
+  .stop { text-align: center; width: 100%; }
+  .dot { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto; background: #1d2a47; border: 3px solid #33456f; }
+  .dot.active { background: #0E1526; border-color: #F0A93B; box-shadow: 0 0 12px rgba(240,169,59,.7); }
+  .dot.done { background: #F0A93B; border-color: #F0A93B; }
+  .stoplabel { font-size: 11px; margin-top: 6px; color: #8A94AD; font-weight: 700; }
+  .stoplabel.on { color: #F0A93B; }
+  .seg { height: 3px; flex: 1; min-width: 10px; background: #33456f; margin: 0 4px 18px; }
+  .seg.done { background: #F0A93B; }
+
+  .cards { display: flex; gap: 10px; margin-bottom: 18px; min-height: 160px; align-items: center; }
+  .card {
+    width: 70px; height: 100px; border-radius: 10px; flex-shrink: 0; position: relative;
+    background: #F7F3E9; border: 1px solid #d8d2c2; box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    display: flex; flex-direction: column; justify-content: space-between; padding: 6px 8px;
+    animation: flipIn .35s ease;
+  }
+  .card.big { width: 108px; height: 152px; padding: 10px 12px; }
+  .card.back {
+    background: repeating-linear-gradient(45deg,#1d2a47,#1d2a47 6px,#24345a 6px,#24345a 12px);
+    border: 2px solid #33456f; box-shadow: 0 4px 14px rgba(0,0,0,.45); animation: none;
+  }
+  .corner { font-weight: 800; font-size: 17px; line-height: 1; }
+  .card.big .corner { font-size: 25px; }
+  .corner.bottom { align-self: flex-end; transform: rotate(180deg); }
+  .pip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; opacity: .9; }
+  .card.big .pip { font-size: 50px; }
+  .rot { color: #D6484D; } .schwarz { color: #20263a; }
+  @keyframes flipIn { from { transform: rotateY(90deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+  .msg {
+    max-width: 480px; width: 100%; text-align: center; margin-bottom: 18px;
+    background: #182238; border: 1px solid #33456f; border-radius: 14px;
+    padding: 13px 16px; font-size: 16px; font-weight: 600;
+  }
+  .msg .sub { font-size: 11px; letter-spacing: .2em; color: #8A94AD; margin-bottom: 4px; }
+  .msg.fail { color: #D6484D; } .msg.won { color: #F0A93B; }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 480px; width: 100%; }
+  .controls button {
+    padding: 14px 10px; border-radius: 12px; border: 2px solid #F0A93B; background: transparent;
+    color: #F0A93B; font-size: 16px; font-weight: 800; cursor: pointer; flex: 1; min-width: 130px;
+    letter-spacing: .02em; font-family: inherit;
+  }
+  .controls button:active { transform: scale(.96); }
+  .controls button.red { border-color: #D6484D; color: #D6484D; }
+  .controls button.blk { border-color: #c8d2ea; color: #c8d2ea; }
+
+  .stats { display: flex; gap: 22px; margin-top: 24px; color: #8A94AD; font-size: 14px; font-weight: 600; }
+  .stats b { color: #EDEAE0; } .stats b.drink { color: #D6484D; }
+</style>
+</head>
+<body>
+  <div class="eyebrow">LINIE 52 · NACHTBUS</div>
+  <h1>BUSFAHREN</h1>
+  <div class="route" id="route"></div>
+  <div class="cards" id="cards"></div>
+  <div class="msg" id="msg"></div>
+  <div class="controls" id="controls"></div>
+  <div class="stats">
+    <span>Runde <b id="rounds">1</b></span>
+    <span>Schlücke <b class="drink" id="drinks">0</b></span>
+    <span>Stapel <b id="deckcount">52</b></span>
+  </div>
+
+<script>
+const SUITS = [
+  { key: "herz", sym: "♥", color: "rot" },
+  { key: "karo", sym: "♦", color: "rot" },
+  { key: "pik", sym: "♠", color: "schwarz" },
+  { key: "kreuz", sym: "♣", color: "schwarz" },
+];
+const RANKS = [["2",2],["3",3],["4",4],["5",5],["6",6],["7",7],["8",8],["9",9],["10",10],["B",11],["D",12],["K",13],["A",14]];
+const STOPS = [
+  { title: "Rot oder Schwarz?", short: "Farbe" },
+  { title: "Drüber oder drunter?", short: "Höhe" },
+  { title: "Dazwischen oder außerhalb?", short: "Bereich" },
+  { title: "Symbol schon dabei oder nicht?", short: "Symbol" },
+];
+
+function buildDeck() {
+  const d = [];
+  for (const s of SUITS) for (const [label, value] of RANKS) d.push({ suit: s, label, value });
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+let deck = buildDeck(), drawn = [], phase = 0, status = "play";
+let drinks = 0, rounds = 1;
+let message = "Steig ein – erste Haltestelle: Rot oder Schwarz?";
+
+function drawCard() {
+  if (deck.length === 0) {
+    const onTable = new Set(drawn.map(c => c.suit.key + c.label));
+    deck = buildDeck().filter(c => !onTable.has(c.suit.key + c.label));
+  }
+  return deck.shift();
+}
+
+function guess(choice) {
+  if (status !== "play") return;
+  const card = drawCard();
+  const v = card.value;
+  let correct = false, note = "";
+
+  if (phase === 0) {
+    correct = card.suit.color === choice;
+  } else if (phase === 1) {
+    const ref = drawn[0].value;
+    if (v === ref) note = " Gleicher Wert – zählt als daneben!";
+    else correct = choice === "hoch" ? v > ref : v < ref;
+  } else if (phase === 2) {
+    const a = Math.min(drawn[0].value, drawn[1].value);
+    const b = Math.max(drawn[0].value, drawn[1].value);
+    if (v === a || v === b) note = " Gleicher Wert wie eine Grenzkarte – daneben!";
+    else correct = choice === "innen" ? (v > a && v < b) : (v < a || v > b);
+  } else {
+    const seen = drawn.some(c => c.suit.key === card.suit.key);
+    correct = choice === "schon" ? seen : !seen;
+  }
+
+  drawn.push(card);
+
+  if (correct) {
+    if (phase === 3) { status = "won"; message = "Endstation erreicht – du bist aus dem Bus ausgestiegen! 🎉"; }
+    else { phase++; message = "Richtig! Weiter zur nächsten Haltestelle: " + STOPS[phase].title; }
+  } else {
+    status = "fail"; drinks++;
+    message = "Daneben!" + note + " Trink einen Schluck – zurück zum Start.";
+  }
+  render();
+}
+
+function nextRound() {
+  drawn = []; phase = 0; status = "play"; rounds++;
+  message = "Neue Runde: Rot oder Schwarz?";
+  if (deck.length < 4) deck = buildDeck();
+  render();
+}
+
+function restartAll() {
+  deck = buildDeck(); drawn = []; phase = 0; status = "play";
+  drinks = 0; rounds = 1;
+  message = "Steig ein – erste Haltestelle: Rot oder Schwarz?";
+  render();
+}
+
+function cardHTML(c, big) {
+  if (!c) return '<div class="card back"></div>';
+  return `<div class="card ${big ? "big" : ""} ${c.suit.color}">
+    <div class="corner">${c.label}<div>${c.suit.sym}</div></div>
+    <div class="pip">${c.suit.sym}</div>
+    <div class="corner bottom">${c.label}<div>${c.suit.sym}</div></div>
+  </div>`;
+}
+
+function btn(label, fn, cls) {
+  const b = document.createElement("button");
+  b.textContent = label;
+  if (cls) b.className = cls;
+  b.onclick = fn;
+  return b;
+}
+
+function render() {
+  // Route
+  let r = "";
+  STOPS.forEach((s, i) => {
+    const done = status === "won" || i < phase;
+    const active = status !== "won" && i === phase;
+    r += `<div class="stopwrap"><div class="stop">
+      <div class="dot ${done ? "done" : ""} ${active ? "active" : ""}"></div>
+      <div class="stoplabel ${done || active ? "on" : ""}">${active ? "🚌 " : ""}${s.short}</div>
+    </div>${i < 3 ? `<div class="seg ${i < phase || status === "won" ? "done" : ""}"></div>` : ""}</div>`;
+  });
+  document.getElementById("route").innerHTML = r;
+
+  // Karten
+  let ch = "";
+  for (let i = 0; i < 4; i++) ch += cardHTML(drawn[i], drawn[i] && i === drawn.length - 1);
+  document.getElementById("cards").innerHTML = ch;
+
+  // Meldung
+  const msg = document.getElementById("msg");
+  msg.className = "msg " + (status === "fail" ? "fail" : status === "won" ? "won" : "");
+  msg.innerHTML = (status === "play" ? `<div class="sub">HALTESTELLE ${phase + 1} VON 4</div>` : "") + message;
+
+  // Buttons
+  const c = document.getElementById("controls");
+  c.innerHTML = "";
+  if (status === "play") {
+    if (phase === 0) { c.append(btn("🔴 Rot", () => guess("rot"), "red"), btn("⚫ Schwarz", () => guess("schwarz"), "blk")); }
+    if (phase === 1) { c.append(btn("⬆️ Drüber", () => guess("hoch")), btn("⬇️ Drunter", () => guess("tief"))); }
+    if (phase === 2) { c.append(btn("↔️ Dazwischen", () => guess("innen")), btn("↕️ Außerhalb", () => guess("außen"))); }
+    if (phase === 3) { c.append(btn("✔️ Schon dabei", () => guess("schon")), btn("✨ Noch nicht dabei", () => guess("neu"))); }
+  } else if (status === "fail") {
+    c.append(btn("🚌 Nächste Runde", nextRound));
+  } else {
+    c.append(btn("🔁 Nochmal fahren", restartAll));
+  }
+
+  // Zähler
+  document.getElementById("rounds").textContent = rounds;
+  document.getElementById("drinks").textContent = drinks;
+  document.getElementById("deckcount").textContent = deck.length;
+}
+
+render();
+</script>
+</body>
+</html>
