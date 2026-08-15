@@ -61,7 +61,7 @@
   .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 480px; width: 100%; }
   .controls button {
     padding: 14px 10px; border-radius: 12px; border: 2px solid #F0A93B; background: transparent;
-    color: #F0A93B; font-size: 16px; font-weight: 800; cursor: pointer; flex: 1; min-width: 130px;
+    color: #F0A93B; font-size: 16px; font-weight: 800; cursor: pointer; flex: 1; min-width: 100px;
     letter-spacing: .02em; font-family: inherit;
   }
   .controls button:active { transform: scale(.96); }
@@ -132,12 +132,14 @@ function guess(choice) {
     correct = card.suit.color === choice;
   } else if (phase === 1) {
     const ref = drawn[0].value;
-    if (v === ref) note = " Gleicher Wert – zählt als daneben!";
+    if (choice === "gleich") correct = v === ref;
+    else if (v === ref) note = " Gleicher Wert – da hätte nur „Gleich“ gezählt!";
     else correct = choice === "hoch" ? v > ref : v < ref;
   } else if (phase === 2) {
     const a = Math.min(drawn[0].value, drawn[1].value);
     const b = Math.max(drawn[0].value, drawn[1].value);
-    if (v === a || v === b) note = " Gleicher Wert wie eine Grenzkarte – daneben!";
+    if (choice === "gleich") correct = v === a || v === b;
+    else if (v === a || v === b) note = " Gleicher Wert wie eine Grenzkarte – da hätte nur „Gleich“ gezählt!";
     else correct = choice === "innen" ? (v > a && v < b) : (v < a || v > b);
   } else {
     const seen = drawn.some(c => c.suit.key === card.suit.key);
@@ -215,8 +217,8 @@ function render() {
   c.innerHTML = "";
   if (status === "play") {
     if (phase === 0) { c.append(btn("🔴 Rot", () => guess("rot"), "red"), btn("⚫ Schwarz", () => guess("schwarz"), "blk")); }
-    if (phase === 1) { c.append(btn("⬆️ Drüber", () => guess("hoch")), btn("⬇️ Drunter", () => guess("tief"))); }
-    if (phase === 2) { c.append(btn("↔️ Dazwischen", () => guess("innen")), btn("↕️ Außerhalb", () => guess("außen"))); }
+    if (phase === 1) { c.append(btn("⬆️ Drüber", () => guess("hoch")), btn("🟰 Gleich", () => guess("gleich")), btn("⬇️ Drunter", () => guess("tief"))); }
+    if (phase === 2) { c.append(btn("↔️ Dazwischen", () => guess("innen")), btn("🟰 Gleich", () => guess("gleich")), btn("↕️ Außerhalb", () => guess("außen"))); }
     if (phase === 3) { c.append(btn("✔️ Schon dabei", () => guess("schon")), btn("✨ Noch nicht dabei", () => guess("neu"))); }
   } else if (status === "fail") {
     c.append(btn("🚌 Nächste Runde", nextRound));
