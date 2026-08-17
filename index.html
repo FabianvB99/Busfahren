@@ -64,17 +64,17 @@
       radial-gradient(ellipse 340px 260px at -60px 12%, rgba(232, 50, 138, .35), transparent 70%),
       radial-gradient(ellipse 300px 240px at 105% 78%, rgba(53, 196, 181, .3), transparent 70%),
       radial-gradient(ellipse 260px 200px at 110% 8%, rgba(245, 158, 66, .3), transparent 70%),
-      radial-gradient(circle 5px at 12% 30%, #FFD25E 98%, transparent),
-      radial-gradient(circle 4px at 22% 62%, #35C4B5 98%, transparent),
-      radial-gradient(circle 5px at 8% 82%, #E8328A 98%, transparent),
-      radial-gradient(circle 4px at 32% 14%, #FFFFFF 98%, transparent),
-      radial-gradient(circle 5px at 58% 8%, #F59E42 98%, transparent),
-      radial-gradient(circle 4px at 78% 24%, #FFD25E 98%, transparent),
-      radial-gradient(circle 5px at 88% 46%, #FFFFFF 98%, transparent),
-      radial-gradient(circle 4px at 68% 70%, #E8328A 98%, transparent),
-      radial-gradient(circle 5px at 84% 88%, #FFD25E 98%, transparent),
-      radial-gradient(circle 4px at 44% 90%, #35C4B5 98%, transparent),
-      radial-gradient(circle 4px at 52% 40%, rgba(255,255,255,.85) 98%, transparent);
+      radial-gradient(circle 5px at 12% 30%, rgba(255,210,94,.4) 98%, transparent),
+      radial-gradient(circle 4px at 22% 62%, rgba(53,196,181,.4) 98%, transparent),
+      radial-gradient(circle 5px at 8% 82%, rgba(232,50,138,.4) 98%, transparent),
+      radial-gradient(circle 4px at 32% 14%, rgba(255,255,255,.3) 98%, transparent),
+      radial-gradient(circle 5px at 58% 8%, rgba(245,158,66,.4) 98%, transparent),
+      radial-gradient(circle 4px at 78% 24%, rgba(255,210,94,.4) 98%, transparent),
+      radial-gradient(circle 5px at 88% 46%, rgba(255,255,255,.3) 98%, transparent),
+      radial-gradient(circle 4px at 68% 70%, rgba(232,50,138,.4) 98%, transparent),
+      radial-gradient(circle 5px at 84% 88%, rgba(255,210,94,.4) 98%, transparent),
+      radial-gradient(circle 4px at 44% 90%, rgba(53,196,181,.4) 98%, transparent),
+      radial-gradient(circle 4px at 52% 40%, rgba(255,255,255,.3) 98%, transparent);
   }
   header, .route, .cards, .msg, .controls, .stats { position: relative; z-index: 1; }
 
@@ -123,10 +123,15 @@
     border: 3px solid #fff; animation: none;
   }
   .corner { font-weight: 800; font-size: 17px; line-height: 1; }
+  .corner div { font-family: 'Rubik', 'Helvetica Neue', system-ui, sans-serif; }
   .card.big .corner { font-size: 25px; }
   .corner.bottom { align-self: flex-end; transform: rotate(180deg); }
-  .pip { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 30px; opacity: .9; }
-  .card.big .pip { font-size: 50px; }
+  .pip {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; opacity: .85;
+    font-family: 'Rubik', 'Helvetica Neue', system-ui, sans-serif;
+  }
+  .card.big .pip { font-size: 42px; }
   .rot { color: var(--red); } .schwarz { color: var(--card-black); }
   @keyframes flipIn { from { transform: rotateY(90deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
 
