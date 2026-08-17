@@ -123,15 +123,14 @@
     border: 3px solid #fff; animation: none;
   }
   .corner { font-weight: 800; font-size: 17px; line-height: 1; }
-  .corner div { font-family: 'Rubik', 'Helvetica Neue', system-ui, sans-serif; }
   .card.big .corner { font-size: 25px; }
   .corner.bottom { align-self: flex-end; transform: rotate(180deg); }
+  .corner svg { display: block; width: .8em; height: .8em; margin: 2px auto 0; fill: currentColor; }
   .pip {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    font-size: 26px; opacity: .85;
-    font-family: 'Rubik', 'Helvetica Neue', system-ui, sans-serif;
   }
-  .card.big .pip { font-size: 42px; }
+  .pip svg { width: 30px; height: 30px; fill: currentColor; opacity: .9; }
+  .card.big .pip svg { width: 46px; height: 46px; }
   .rot { color: var(--red); } .schwarz { color: var(--card-black); }
   @keyframes flipIn { from { transform: rotateY(90deg); opacity: 0 } to { transform: rotateY(0); opacity: 1 } }
 
@@ -310,12 +309,20 @@ function confetti() {
   }
 }
 
+const SUIT_SVG = {
+  herz: '<svg viewBox="0 0 24 24"><path d="M12 21.4C6.2 16.2 2.4 12.6 2.4 8.6 2.4 5.5 4.9 3 8 3c1.8 0 3.2.9 4 2.2C12.8 3.9 14.2 3 16 3c3.1 0 5.6 2.5 5.6 5.6 0 4-3.8 7.6-9.6 12.8z"/></svg>',
+  karo: '<svg viewBox="0 0 24 24"><path d="M12 1.5 20.5 12 12 22.5 3.5 12z"/></svg>',
+  pik: '<svg viewBox="0 0 24 24"><path d="M12 1.6c5.6 5 9.4 8.4 9.4 12.2 0 2.9-2.3 4.9-4.8 4.9-1.3 0-2.5-.5-3.4-1.4.3 1.9 1 3.4 2 4.4H8.8c1-1 1.7-2.5 2-4.4-.9.9-2.1 1.4-3.4 1.4-2.5 0-4.8-2-4.8-4.9 0-3.8 3.8-7.2 9.4-12.2z"/></svg>',
+  kreuz: '<svg viewBox="0 0 24 24"><path d="M12 1.8a4.1 4.1 0 0 1 4.1 4.1c0 .8-.2 1.5-.6 2.1a4.1 4.1 0 1 1-1.9 7.5c.3 2.6 1.1 4.7 2.4 6.2H8c1.3-1.5 2.1-3.6 2.4-6.2a4.1 4.1 0 1 1-1.9-7.5c-.4-.6-.6-1.3-.6-2.1A4.1 4.1 0 0 1 12 1.8z"/></svg>'
+};
+
 function cardHTML(c, big) {
   if (!c) return '<div class="card back"></div>';
+  const icon = SUIT_SVG[c.suit.key];
   return '<div class="card ' + (big ? "big " : "") + c.suit.color + '">' +
-    '<div class="corner">' + c.label + '<div>' + c.suit.sym + '</div></div>' +
-    '<div class="pip">' + c.suit.sym + '</div>' +
-    '<div class="corner bottom">' + c.label + '<div>' + c.suit.sym + '</div></div>' +
+    '<div class="corner">' + c.label + icon + '</div>' +
+    '<div class="pip">' + icon + '</div>' +
+    '<div class="corner bottom">' + c.label + icon + '</div>' +
   '</div>';
 }
 
